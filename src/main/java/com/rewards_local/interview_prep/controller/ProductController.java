@@ -1,8 +1,14 @@
 package com.rewards_local.interview_prep.controller;
 
 
+import com.rewards_local.interview_prep.dto.PagedResponse;
 import com.rewards_local.interview_prep.model.Product;
 import com.rewards_local.interview_prep.productservice.ProductService;
+import com.rewards_local.interview_prep.request.ProductRequest;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,13 +25,22 @@ public class ProductController {
     }
 
     @PostMapping
-    public Product addProduct(@RequestBody Product product) {
-        return productService.saveProduct(product);
+    public Product addProduct(@Valid @RequestBody ProductRequest productRequest) {
+        return productService.saveProduct(productRequest);
     }
 
     @GetMapping
-    public List<Product> getAllProducts(){
-       return productService.getAllProducts();
+    public PagedResponse<Product> getAllProducts(@PageableDefault (page=0,size = 10, sort="name") Pageable pageable) {
+
+        Page<Product> pageResult = productService.getAllProducts(pageable);
+        return new PagedResponse<>(
+                pageResult.getContent(),
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                pageResult.isLast()
+        );
     }
 
     @GetMapping("/{id}")
